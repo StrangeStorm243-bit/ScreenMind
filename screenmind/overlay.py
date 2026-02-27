@@ -16,21 +16,53 @@ class Overlay:
         self.root.configure(bg="#1a1a2e")
         self.root.resizable(True, True)
 
+        # X button hides instead of quitting (background capture keeps running)
+        self.root.protocol("WM_DELETE_WINDOW", self._on_minimize)
+        # Ctrl+Q to actually quit
+        self.root.bind("<Control-q>", lambda _: self._on_quit())
+
         font = ("Consolas", 10)
         bg = "#1a1a2e"
         chat_bg = "#16213e"
         fg = "#e0e0e0"
         accent = "#00d4ff"
 
-        # Title label
+        # Title bar with minimize/quit controls
+        title_frame = tk.Frame(self.root, bg=bg)
+        title_frame.pack(fill="x", padx=8, pady=(8, 0))
+
         title_label = tk.Label(
-            self.root,
+            title_frame,
             text="ScreenMind",
             font=("Consolas", 12, "bold"),
             bg=bg,
             fg=fg,
         )
-        title_label.pack(fill="x", padx=8, pady=(8, 0))
+        title_label.pack(side="left")
+
+        quit_btn = tk.Button(
+            title_frame,
+            text="Quit",
+            font=("Consolas", 8),
+            bg="#ff4444",
+            fg="#ffffff",
+            activebackground="#cc0000",
+            relief="flat",
+            command=self._on_quit,
+        )
+        quit_btn.pack(side="right", padx=(4, 0))
+
+        hide_btn = tk.Button(
+            title_frame,
+            text="Hide",
+            font=("Consolas", 8),
+            bg="#444466",
+            fg="#e0e0e0",
+            activebackground="#555577",
+            relief="flat",
+            command=self._on_minimize,
+        )
+        hide_btn.pack(side="right")
 
         # Status label
         self._status_var = tk.StringVar(value="Idle")
@@ -127,6 +159,19 @@ class Overlay:
     def set_status(self, status):
         """Thread-safe: update the status label."""
         self.root.after(0, lambda: self._status_var.set(status))
+
+    def _on_minimize(self):
+        """Hide the overlay window. Background capture keeps running."""
+        self.root.withdraw()
+
+    def _on_quit(self):
+        """Fully exit the application."""
+        self.root.destroy()
+
+    def show(self):
+        """Restore the overlay window after being hidden."""
+        self.root.deiconify()
+        self.root.lift()
 
     def run(self):
         self.root.mainloop()

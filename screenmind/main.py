@@ -102,8 +102,14 @@ def main():
         lambda: threading.Thread(target=on_push_to_talk, daemon=True).start(),
     )
 
+    # Ctrl+Shift+S to show/restore the overlay after hiding
+    keyboard.add_hotkey(
+        "ctrl+shift+s",
+        lambda: overlay.show(),
+    )
+
     overlay.add_message("ScreenMind: I'm watching your screen. Ask me anything!")
-    overlay.add_message("ScreenMind: Press Ctrl+Space for voice input.")
+    overlay.add_message("ScreenMind: Press Ctrl+Space for voice, Ctrl+Shift+S to restore.")
     overlay.run()
 
 
