@@ -6,12 +6,15 @@ _client = TavilyClient(api_key=TAVILY_API_KEY)
 
 def search_web(query: str, max_results: int = 5) -> list[dict]:
     """Search the web using Tavily and return structured results."""
-    response = _client.search(
-        query=query,
-        search_depth="basic",
-        max_results=max_results,
-        include_answer=True,
-    )
+    try:
+        response = _client.search(
+            query=query,
+            search_depth="basic",
+            max_results=max_results,
+            include_answer=True,
+        )
+    except Exception as exc:
+        return [{"title": "Search unavailable", "content": str(exc), "url": ""}]
 
     results = []
 

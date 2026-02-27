@@ -14,13 +14,23 @@ class Overlay:
         self.root.geometry("380x500+50+50")
         self.root.attributes("-topmost", True)
         self.root.configure(bg="#1a1a2e")
-        self.root.resizable(False, False)
+        self.root.resizable(True, True)
 
         font = ("Consolas", 10)
         bg = "#1a1a2e"
         chat_bg = "#16213e"
         fg = "#e0e0e0"
         accent = "#00d4ff"
+
+        # Title label
+        title_label = tk.Label(
+            self.root,
+            text="ScreenMind",
+            font=("Consolas", 12, "bold"),
+            bg=bg,
+            fg=fg,
+        )
+        title_label.pack(fill="x", padx=8, pady=(8, 0))
 
         # Status label
         self._status_var = tk.StringVar(value="Idle")

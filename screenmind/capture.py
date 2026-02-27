@@ -14,15 +14,19 @@ class ScreenCapture:
     def __init__(self):
         self._last_hash = None
 
-    def capture(self) -> Image.Image:
+    def capture(self) -> Image.Image | None:
         """Grab primary monitor, convert to RGB, resize to target width."""
-        with mss.mss() as sct:
-            raw = sct.grab(sct.monitors[1])
-        # mss returns BGRX; convert via PIL
-        img = Image.frombytes("RGB", raw.size, raw.bgra, "raw", "BGRX")
-        ratio = SCREENSHOT_WIDTH / img.width
-        new_height = int(img.height * ratio)
-        return img.resize((SCREENSHOT_WIDTH, new_height), Image.LANCZOS)
+        try:
+            with mss.mss() as sct:
+                raw = sct.grab(sct.monitors[1])
+            # mss returns BGRX; convert via PIL
+            img = Image.frombytes("RGB", raw.size, raw.bgra, "raw", "BGRX")
+            ratio = SCREENSHOT_WIDTH / img.width
+            new_height = int(img.height * ratio)
+            return img.resize((SCREENSHOT_WIDTH, new_height), Image.LANCZOS)
+        except Exception as exc:
+            print(f"[ScreenCapture] capture failed: {exc}")
+            return None
 
     def has_changed(self, img: Image.Image) -> bool:
         """Return True if perceptual hash diff exceeds threshold."""
