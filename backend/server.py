@@ -32,6 +32,12 @@ class AgentResponse(BaseModel):
     sources: list[str] = []
 
 
+@app.on_event("startup")
+async def startup():
+    from screenmind.graph import init_graph
+    init_graph()
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -90,6 +96,17 @@ async def get_context():
         return {"topics": get_recent_context()}
     except Exception:
         return {"topics": []}
+
+
+@app.post("/cleanup")
+async def cleanup_captures():
+    """Remove old screen captures to prevent unbounded Neo4j growth."""
+    try:
+        from screenmind.graph import cleanup_old_captures
+        deleted = cleanup_old_captures(max_age_hours=24)
+        return {"deleted": deleted}
+    except Exception:
+        return {"deleted": 0}
 
 
 if __name__ == "__main__":

@@ -17,16 +17,15 @@ _analyzing = threading.Lock()
 
 # Force a capture every FORCE_INTERVAL cycles even if screen hasn't changed
 _FORCE_EVERY = 6  # every 6th cycle = every 30s at 5s interval
+_CLEANUP_EVERY = 720  # every 720 cycles * 5s = every hour
 
 
 def handle_user_message(text: str) -> str:
-    """Send user message + fresh screenshot to backend."""
-    img = capture.capture()
-    b64 = capture.to_base64(img)
+    """Send user message to backend — uses cached screen context from Neo4j, no fresh screenshot."""
     try:
         resp = requests.post(
-            f"{BACKEND_URL}/analyze",
-            json={"screenshot_b64": b64, "user_message": text},
+            f"{BACKEND_URL}/query",
+            json={"message": text},
             timeout=60,
         )
         return resp.json().get("response", "No response")
@@ -43,6 +42,13 @@ def background_capture(overlay: Overlay):
             cycle += 1
             changed = capture.has_changed(img)
             force = (cycle % _FORCE_EVERY == 0)
+
+            # Periodic cleanup of old ScreenCapture nodes
+            if cycle % _CLEANUP_EVERY == 0:
+                try:
+                    requests.post(f"{BACKEND_URL}/cleanup", timeout=10)
+                except Exception:
+                    pass
 
             if changed or force:
                 # Skip if a previous analysis is still in progress

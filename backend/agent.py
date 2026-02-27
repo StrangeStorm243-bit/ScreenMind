@@ -55,28 +55,54 @@ def extract_screen_entities(screen_description: str) -> dict:
         return {"entities": {}, "classification": {}, "relations": {}}
 
 
-def _auto_store_entities(extracted: dict):
-    """Silently store GLiNER2-extracted entities into Neo4j."""
+def extract_query_entities(query: str) -> list[str]:
+    """Extract entity names from a user query using GLiNER2.
+    Returns a flat list of entity name strings for Neo4j retrieval.
+    """
     try:
-        from screenmind.graph import remember_topic
-
-        entity_map = extracted.get("entities", {}).get("entities", {})
-        for entity_type, items in entity_map.items():
+        ext = _get_gliner()
+        entities = ext.extract_entities(
+            query,
+            ["application", "person", "technology", "website", "project", "topic"],
+            include_confidence=True,
+        )
+        names = []
+        entity_map = entities.get("entities", {})
+        for items in entity_map.values():
             for item in items:
                 name = item if isinstance(item, str) else item.get("text", "")
                 if name and len(name) > 1:
-                    remember_topic(name, entity_type, f"Seen on screen ({entity_type})", [])
+                    names.append(name)
+        return names
     except Exception:
-        pass  # Neo4j may not be configured
+        return []
 
 
 def update_screen_context(screenshot_b64: str):
-    """Fast path: Reka + GLiNER2 only. Updates screen context without calling LLM."""
+    """Fast path: Reka + GLiNER2 + Neo4j storage. No LLM call."""
     global last_screen_description
     screen_desc = analyze_screenshot(screenshot_b64)
     last_screen_description = screen_desc
     extracted = extract_screen_entities(screen_desc)
-    _auto_store_entities(extracted)
+
+    # Store full description + entities in Neo4j
+    from screenmind.graph import store_screen_capture
+    activity = ""
+    classification = extracted.get("classification", {})
+    if isinstance(classification, dict):
+        act = classification.get("activity", "")
+        if isinstance(act, list) and act:
+            activity = act[0]
+        elif isinstance(act, dict):
+            activity = max(act, key=act.get, default="")
+        elif isinstance(act, str):
+            activity = act
+
+    store_screen_capture(
+        description=screen_desc,
+        activity=str(activity),
+        entities=extracted.get("entities", {}),
+    )
 
 
 # In-memory conversation history (per session)
@@ -90,19 +116,25 @@ Your capabilities:
 - remember: Store important context about what the user has been working on into a knowledge graph
 - recall: Retrieve past context about what the user has worked on
 
+You receive screen context in two ways:
+1. Real-time: When analyzing a new screenshot, you get the current screen description.
+2. Retrieved: When answering a question, you get relevant past screen descriptions retrieved from your knowledge graph based on the query.
+
 CRITICAL RULES:
-- ONLY state facts that are explicitly mentioned in the screen description provided to you
-- NEVER fabricate, guess, or hallucinate details like names, channel names, or content that isn't in the description
-- If the description says "messaging app", say "messaging app" — do NOT guess it's Slack, Discord, or Teams unless the description explicitly says so
+- ONLY state facts that are explicitly mentioned in the screen descriptions provided to you
+- NEVER fabricate, guess, or hallucinate details like names, channel names, or content that isn't in the descriptions
+- If a description says "messaging app", say "messaging app" — do NOT guess it's Slack, Discord, or Teams unless the description explicitly says so
 - If you're unsure about a detail, say "it appears to be" rather than stating it as fact
 - Keep responses short and factual
+- When multiple screen captures are provided, synthesize them to give the most complete answer
+- Pay attention to timestamps — more recent captures are more likely to reflect current state
 
 Behavior:
 - When given a screenshot analysis, decide if the user would benefit from a proactive insight
 - Only surface proactive insights when genuinely useful (don't be annoying)
 - When the user asks a question, use the available tools to give the best answer
 - Be concise but helpful
-- Reference only things explicitly mentioned in the screen description"""
+- Reference only things explicitly mentioned in the screen descriptions"""
 
 TOOLS = [
     {
@@ -184,24 +216,69 @@ def run_agent(screenshot_b64: str = None, user_message: str = None) -> dict:
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
-    # Add screen context
-    if screenshot_b64:
+    if user_message:
+        # === RAG retrieval path: skip Reka, use cached context from Neo4j ===
+        from screenmind.graph import retrieve_relevant_context
+
+        query_entities = extract_query_entities(user_message)
+        relevant_captures = retrieve_relevant_context(
+            query=user_message,
+            entity_names=query_entities if query_entities else None,
+            limit=5,
+        )
+
+        if relevant_captures:
+            captures_text = "\n\n".join(
+                f"[Screen at {c.get('timestamp', 'unknown')} "
+                f"(activity: {c.get('activity', 'unknown')})]:\n{c['description']}"
+                for c in relevant_captures
+            )
+            context_msg = (
+                f"[Retrieved screen context based on query relevance:]\n{captures_text}"
+            )
+        elif last_screen_description:
+            context_msg = f"[Last known screen: {last_screen_description}]"
+        else:
+            context_msg = ""
+
+        proactive = False
+
+    elif screenshot_b64:
+        # === Background analysis path: Reka + GLiNER2 + store in Neo4j ===
         screen_desc = analyze_screenshot(screenshot_b64)
         last_screen_description = screen_desc
 
-        # Fastino GLiNER2: extract entities and auto-store in Neo4j
         extracted = extract_screen_entities(screen_desc)
-        _auto_store_entities(extracted)
+
+        # Store full description in Neo4j
+        from screenmind.graph import store_screen_capture
+        activity = ""
+        classification = extracted.get("classification", {})
+        if isinstance(classification, dict):
+            act = classification.get("activity", "")
+            if isinstance(act, list) and act:
+                activity = act[0]
+            elif isinstance(act, dict):
+                activity = max(act, key=act.get, default="")
+            elif isinstance(act, str):
+                activity = act
+
+        store_screen_capture(
+            description=screen_desc,
+            activity=str(activity),
+            entities=extracted.get("entities", {}),
+        )
 
         context_msg = (
             f"[Current screen shows: {screen_desc}]\n"
             f"[Extracted entities: {json.dumps(extracted.get('entities', {}))}]\n"
             f"[Activity: {json.dumps(extracted.get('classification', {}))}]"
         )
-    elif last_screen_description:
-        context_msg = f"[Last known screen: {last_screen_description}]"
+        proactive = True
+
     else:
         context_msg = ""
+        proactive = False
 
     if context_msg:
         messages.append({"role": "system", "content": context_msg})
@@ -213,7 +290,6 @@ def run_agent(screenshot_b64: str = None, user_message: str = None) -> dict:
     if user_message:
         messages.append({"role": "user", "content": user_message})
         conversation_history.append({"role": "user", "content": user_message})
-        proactive = False
     else:
         messages.append({
             "role": "user",
@@ -223,7 +299,6 @@ def run_agent(screenshot_b64: str = None, user_message: str = None) -> dict:
                 "Only speak up if you have something genuinely helpful."
             ),
         })
-        proactive = True
 
     # Run the agent loop (max 3 tool calls)
     for _ in range(3):
