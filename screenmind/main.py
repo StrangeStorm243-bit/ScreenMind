@@ -15,13 +15,18 @@ capture = ScreenCapture()
 # Lock to prevent background captures from piling up
 _analyzing = threading.Lock()
 
+# Force a capture every FORCE_INTERVAL cycles even if screen hasn't changed
+_FORCE_EVERY = 6  # every 6th cycle = every 30s at 5s interval
+
 
 def handle_user_message(text: str) -> str:
-    """Send user message to backend using cached screen context (fast path)."""
+    """Send user message + fresh screenshot to backend."""
+    img = capture.capture()
+    b64 = capture.to_base64(img)
     try:
         resp = requests.post(
-            f"{BACKEND_URL}/query",
-            json={"message": text},
+            f"{BACKEND_URL}/analyze",
+            json={"screenshot_b64": b64, "user_message": text},
             timeout=60,
         )
         return resp.json().get("response", "No response")
@@ -30,11 +35,16 @@ def handle_user_message(text: str) -> str:
 
 
 def background_capture(overlay: Overlay):
-    """Periodically capture screen and send for proactive analysis if changed."""
+    """Periodically capture screen and send for context updates."""
+    cycle = 0
     while True:
         try:
             img = capture.capture()
-            if capture.has_changed(img):
+            cycle += 1
+            changed = capture.has_changed(img)
+            force = (cycle % _FORCE_EVERY == 0)
+
+            if changed or force:
                 # Skip if a previous analysis is still in progress
                 if not _analyzing.acquire(blocking=False):
                     time.sleep(CAPTURE_INTERVAL)
@@ -47,9 +57,6 @@ def background_capture(overlay: Overlay):
                         json={"screenshot_b64": b64},
                         timeout=60,
                     )
-                    data = resp.json()
-                    if data.get("proactive") and data.get("response"):
-                        overlay.add_message(f"ScreenMind: {data['response']}")
                     overlay.set_status("Watching...")
                 finally:
                     _analyzing.release()

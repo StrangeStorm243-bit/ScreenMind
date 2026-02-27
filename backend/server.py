@@ -70,6 +70,17 @@ async def query(req: QueryRequest):
         return AgentResponse(response=f"Error: {e}")
 
 
+@app.post("/analyze_quick")
+async def analyze_quick(req: AnalyzeRequest):
+    """Fast context update: Reka + GLiNER2 only, no LLM."""
+    try:
+        from backend.agent import update_screen_context
+        update_screen_context(req.screenshot_b64)
+        return {"status": "ok"}
+    except Exception:
+        return {"status": "error"}
+
+
 @app.get("/context")
 async def get_context():
     """Return recent knowledge graph context."""
