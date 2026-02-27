@@ -1,12 +1,74 @@
-"""ScreenMind agent brain — GPT-4o with function calling."""
+"""ScreenMind agent brain — LLM with function calling + Fastino GLiNER2 entity extraction."""
 
 import json
+import os
 from openai import OpenAI
 from screenmind.vision import analyze_screenshot
 from screenmind.search import search_web
-from screenmind.config import OPENAI_API_KEY
+from screenmind.config import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+# LLM client — works with OpenAI, Ollama, LM Studio, or any OpenAI-compatible API
+client = OpenAI(api_key=LLM_API_KEY or "not-set", base_url=LLM_BASE_URL)
+
+# Fastino GLiNER2 — local entity extraction (lazy-loaded)
+_gliner = None
+
+
+def _get_gliner():
+    global _gliner
+    if _gliner is None:
+        from gliner2 import GLiNER2
+        _gliner = GLiNER2.from_pretrained("fastino/gliner2-base-v1")
+    return _gliner
+
+
+def extract_screen_entities(screen_description: str) -> dict:
+    """Extract entities and classify activity from a screen description using Fastino GLiNER2."""
+    try:
+        ext = _get_gliner()
+
+        entities = ext.extract_entities(
+            screen_description,
+            ["application", "person", "technology", "website", "project", "error_message"],
+            include_confidence=True,
+        )
+
+        classification = ext.classify_text(
+            screen_description,
+            {
+                "activity": ["coding", "browsing", "reading_docs", "chatting", "email", "design"],
+                "focus_level": ["deep_focus", "multitasking", "idle"],
+            },
+        )
+
+        relations = ext.extract_relations(
+            screen_description,
+            ["uses", "related_to", "working_on"],
+        )
+
+        return {
+            "entities": entities,
+            "classification": classification,
+            "relations": relations,
+        }
+    except Exception:
+        return {"entities": {}, "classification": {}, "relations": {}}
+
+
+def _auto_store_entities(extracted: dict):
+    """Silently store GLiNER2-extracted entities into Neo4j."""
+    try:
+        from screenmind.graph import remember_topic
+
+        entity_map = extracted.get("entities", {}).get("entities", {})
+        for entity_type, items in entity_map.items():
+            for item in items:
+                name = item if isinstance(item, str) else item.get("text", "")
+                if name and len(name) > 1:
+                    remember_topic(name, entity_type, f"Seen on screen ({entity_type})", [])
+    except Exception:
+        pass  # Neo4j may not be configured
+
 
 # In-memory conversation history (per session)
 conversation_history: list[dict] = []
@@ -110,7 +172,16 @@ def run_agent(screenshot_b64: str = None, user_message: str = None) -> dict:
     if screenshot_b64:
         screen_desc = analyze_screenshot(screenshot_b64)
         last_screen_description = screen_desc
-        context_msg = f"[Current screen shows: {screen_desc}]"
+
+        # Fastino GLiNER2: extract entities and auto-store in Neo4j
+        extracted = extract_screen_entities(screen_desc)
+        _auto_store_entities(extracted)
+
+        context_msg = (
+            f"[Current screen shows: {screen_desc}]\n"
+            f"[Extracted entities: {json.dumps(extracted.get('entities', {}))}]\n"
+            f"[Activity: {json.dumps(extracted.get('classification', {}))}]"
+        )
     elif last_screen_description:
         context_msg = f"[Last known screen: {last_screen_description}]"
     else:
@@ -141,7 +212,7 @@ def run_agent(screenshot_b64: str = None, user_message: str = None) -> dict:
     # Run the agent loop (max 3 tool calls)
     for _ in range(3):
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model=LLM_MODEL,
             messages=messages,
             tools=TOOLS,
             tool_choice="auto",
