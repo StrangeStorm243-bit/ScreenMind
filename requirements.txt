@@ -1,0 +1,15 @@
+mss>=9.0.0
+imagehash>=4.3.0
+Pillow>=10.0.0
+reka-api>=3.0.0
+tavily-python>=0.5.0
+neo4j>=5.0.0
+openai>=1.0.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+keyboard>=0.13.5
+sounddevice>=0.4.6
+scipy>=1.11.0
+fastapi>=0.100.0
+uvicorn>=0.23.0
+pydantic>=2.0.0
