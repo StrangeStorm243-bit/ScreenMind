@@ -12,15 +12,16 @@ from screenmind.overlay import Overlay
 
 capture = ScreenCapture()
 
+# Lock to prevent background captures from piling up
+_analyzing = threading.Lock()
+
 
 def handle_user_message(text: str) -> str:
-    """Send user message + current screenshot to backend."""
-    img = capture.capture()
-    b64 = capture.to_base64(img)
+    """Send user message to backend using cached screen context (fast path)."""
     try:
         resp = requests.post(
-            f"{BACKEND_URL}/analyze",
-            json={"screenshot_b64": b64, "user_message": text},
+            f"{BACKEND_URL}/query",
+            json={"message": text},
             timeout=60,
         )
         return resp.json().get("response", "No response")
@@ -34,17 +35,24 @@ def background_capture(overlay: Overlay):
         try:
             img = capture.capture()
             if capture.has_changed(img):
-                b64 = capture.to_base64(img)
-                overlay.set_status("Analyzing screen...")
-                resp = requests.post(
-                    f"{BACKEND_URL}/analyze",
-                    json={"screenshot_b64": b64},
-                    timeout=60,
-                )
-                data = resp.json()
-                if data.get("proactive") and data.get("response"):
-                    overlay.add_message(f"ScreenMind: {data['response']}")
-                overlay.set_status("Watching...")
+                # Skip if a previous analysis is still in progress
+                if not _analyzing.acquire(blocking=False):
+                    time.sleep(CAPTURE_INTERVAL)
+                    continue
+                try:
+                    b64 = capture.to_base64(img)
+                    overlay.set_status("Analyzing screen...")
+                    resp = requests.post(
+                        f"{BACKEND_URL}/analyze",
+                        json={"screenshot_b64": b64},
+                        timeout=60,
+                    )
+                    data = resp.json()
+                    if data.get("proactive") and data.get("response"):
+                        overlay.add_message(f"ScreenMind: {data['response']}")
+                    overlay.set_status("Watching...")
+                finally:
+                    _analyzing.release()
             else:
                 overlay.set_status("Watching...")
         except Exception:
