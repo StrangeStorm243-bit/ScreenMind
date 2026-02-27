@@ -39,20 +39,40 @@ def health():
 
 @app.post("/analyze", response_model=AgentResponse)
 async def analyze(req: AnalyzeRequest):
-    """Placeholder — will be wired to agent brain in Phase 4."""
-    return AgentResponse(response="Analysis placeholder — agent brain not connected yet.")
+    """Analyze a screenshot, optionally with a user message."""
+    from backend.agent import run_agent
+
+    try:
+        result = run_agent(screenshot_b64=req.screenshot_b64, user_message=req.user_message)
+        return AgentResponse(
+            response=result["response"],
+            proactive=result.get("proactive", False),
+        )
+    except Exception as e:
+        return AgentResponse(response=f"Error: {e}")
 
 
 @app.post("/query", response_model=AgentResponse)
 async def query(req: QueryRequest):
-    """Placeholder — will be wired to agent brain in Phase 4."""
-    return AgentResponse(response="Query placeholder — agent brain not connected yet.")
+    """Answer a user question with optional screenshot context."""
+    from backend.agent import run_agent
+
+    try:
+        result = run_agent(screenshot_b64=req.screenshot_b64, user_message=req.message)
+        return AgentResponse(response=result["response"])
+    except Exception as e:
+        return AgentResponse(response=f"Error: {e}")
 
 
 @app.get("/context")
 async def get_context():
-    """Placeholder — will be wired to Neo4j in Phase 4."""
-    return {"topics": [], "relationships": []}
+    """Return recent knowledge graph context."""
+    try:
+        from screenmind.graph import get_recent_context
+
+        return {"topics": get_recent_context()}
+    except Exception:
+        return {"topics": []}
 
 
 if __name__ == "__main__":
