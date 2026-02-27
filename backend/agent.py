@@ -218,12 +218,13 @@ def run_agent(screenshot_b64: str = None, user_message: str = None) -> dict:
 
     if user_message:
         # === RAG retrieval path: skip Reka, use cached context from Neo4j ===
+        # Skip GLiNER2 entity extraction on queries (too slow, ~17s).
+        # Just use raw query text for Neo4j full-text/CONTAINS search.
         from screenmind.graph import retrieve_relevant_context
 
-        query_entities = extract_query_entities(user_message)
         relevant_captures = retrieve_relevant_context(
             query=user_message,
-            entity_names=query_entities if query_entities else None,
+            entity_names=None,
             limit=5,
         )
 
@@ -330,3 +331,105 @@ def run_agent(screenshot_b64: str = None, user_message: str = None) -> dict:
             return {"response": text, "proactive": proactive}
 
     return {"response": "I couldn't complete my analysis.", "proactive": proactive}
+
+
+def run_agent_stream(user_message: str):
+    """Streaming version of run_agent for user queries. Yields text chunks."""
+    global last_screen_description
+
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+    # RAG retrieval — skip GLiNER2 entity extraction (too slow for queries),
+    # just use the raw query text for Neo4j full-text/CONTAINS search
+    from screenmind.graph import retrieve_relevant_context
+
+    relevant_captures = retrieve_relevant_context(
+        query=user_message,
+        entity_names=None,
+        limit=5,
+    )
+
+    if relevant_captures:
+        captures_text = "\n\n".join(
+            f"[Screen at {c.get('timestamp', 'unknown')} "
+            f"(activity: {c.get('activity', 'unknown')})]:\n{c['description']}"
+            for c in relevant_captures
+        )
+        context_msg = f"[Retrieved screen context based on query relevance:]\n{captures_text}"
+    elif last_screen_description:
+        context_msg = f"[Last known screen: {last_screen_description}]"
+    else:
+        context_msg = ""
+
+    if context_msg:
+        messages.append({"role": "system", "content": context_msg})
+
+    messages.extend(conversation_history[-10:])
+    messages.append({"role": "user", "content": user_message})
+    conversation_history.append({"role": "user", "content": user_message})
+
+    # Stream directly — handle tool calls inline from stream deltas
+    for attempt in range(3):
+        stream = client.chat.completions.create(
+            model=LLM_MODEL,
+            messages=messages,
+            tools=TOOLS,
+            tool_choice="auto",
+            stream=True,
+        )
+
+        full_text = ""
+        tool_calls_acc = {}  # id -> {name, arguments}
+
+        for chunk in stream:
+            delta = chunk.choices[0].delta
+
+            # Accumulate tool call deltas
+            if delta.tool_calls:
+                for tc_delta in delta.tool_calls:
+                    idx = tc_delta.index
+                    if idx not in tool_calls_acc:
+                        tool_calls_acc[idx] = {
+                            "id": tc_delta.id or "",
+                            "name": "",
+                            "arguments": "",
+                        }
+                    if tc_delta.id:
+                        tool_calls_acc[idx]["id"] = tc_delta.id
+                    if tc_delta.function:
+                        if tc_delta.function.name:
+                            tool_calls_acc[idx]["name"] = tc_delta.function.name
+                        if tc_delta.function.arguments:
+                            tool_calls_acc[idx]["arguments"] += tc_delta.function.arguments
+
+            # Stream content chunks immediately
+            if delta.content:
+                full_text += delta.content
+                yield delta.content
+
+        # If tool calls were made, execute them and loop
+        if tool_calls_acc:
+            # Build assistant message with tool_calls for history
+            tc_list = [
+                {
+                    "id": tc["id"],
+                    "type": "function",
+                    "function": {"name": tc["name"], "arguments": tc["arguments"]},
+                }
+                for tc in tool_calls_acc.values()
+            ]
+            messages.append({"role": "assistant", "content": full_text or None, "tool_calls": tc_list})
+            for tc in tool_calls_acc.values():
+                result = execute_tool(tc["name"], json.loads(tc["arguments"]))
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tc["id"],
+                    "content": result,
+                })
+            continue  # Next iteration will stream the follow-up
+
+        # No tool calls — we're done
+        conversation_history.append({"role": "assistant", "content": full_text})
+        return
+
+    yield "I couldn't complete my analysis."

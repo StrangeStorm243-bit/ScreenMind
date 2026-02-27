@@ -29,7 +29,7 @@ def analyze_screenshot(base64_image: str, question: str = None) -> str:
             _API_URL,
             headers={"X-Api-Key": REKA_API_KEY, "Content-Type": "application/json"},
             json={
-                "model": "reka-core",
+                "model": "reka-flash",
                 "messages": [
                     {
                         "role": "user",

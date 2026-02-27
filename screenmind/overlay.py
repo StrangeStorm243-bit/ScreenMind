@@ -136,8 +136,12 @@ class Overlay:
         if self.on_submit is None:
             return
         try:
-            response = self.on_submit(text)
-            self.add_message(f"ScreenMind: {response}")
+            # Pass overlay so the callback can stream directly into the chat
+            response = self.on_submit(text, overlay=self)
+            # If streaming was used, the message is already in the chat.
+            # If fallback returned a string, add it.
+            if response and not hasattr(self, '_streamed'):
+                pass  # streaming handler already wrote to chat
         except Exception as exc:
             self.add_message(f"ScreenMind: [error] {exc}")
         finally:
@@ -155,6 +159,39 @@ class Overlay:
             self.chat_display.configure(state="disabled")
 
         self.root.after(0, _insert)
+
+    def start_message(self, prefix="ScreenMind: "):
+        """Thread-safe: start a new streaming message. Returns nothing — call append_to_message() next."""
+
+        def _start():
+            self.chat_display.configure(state="normal")
+            self.chat_display.insert("end", prefix)
+            self.chat_display.see("end")
+            self.chat_display.configure(state="disabled")
+
+        self.root.after(0, _start)
+
+    def append_to_message(self, text):
+        """Thread-safe: append a text chunk to the current streaming message."""
+
+        def _append():
+            self.chat_display.configure(state="normal")
+            self.chat_display.insert("end", text)
+            self.chat_display.see("end")
+            self.chat_display.configure(state="disabled")
+
+        self.root.after(0, _append)
+
+    def end_message(self):
+        """Thread-safe: finalize the streaming message with trailing newlines."""
+
+        def _end():
+            self.chat_display.configure(state="normal")
+            self.chat_display.insert("end", "\n\n")
+            self.chat_display.see("end")
+            self.chat_display.configure(state="disabled")
+
+        self.root.after(0, _end)
 
     def set_status(self, status):
         """Thread-safe: update the status label."""

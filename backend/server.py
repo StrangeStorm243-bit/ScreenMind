@@ -1,6 +1,7 @@
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -74,6 +75,22 @@ async def query(req: QueryRequest):
         return AgentResponse(response=result["response"])
     except Exception as e:
         return AgentResponse(response=f"Error: {e}")
+
+
+@app.post("/query/stream")
+async def query_stream(req: QueryRequest):
+    """Stream LLM response as Server-Sent Events."""
+    from backend.agent import run_agent_stream
+
+    def event_generator():
+        try:
+            for chunk in run_agent_stream(user_message=req.message):
+                yield f"data: {chunk}\n\n"
+            yield "data: [DONE]\n\n"
+        except Exception as e:
+            yield f"data: [ERROR] {e}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @app.post("/analyze_quick")

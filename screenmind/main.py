@@ -20,15 +20,40 @@ _FORCE_EVERY = 6  # every 6th cycle = every 30s at 5s interval
 _CLEANUP_EVERY = 720  # every 720 cycles * 5s = every hour
 
 
-def handle_user_message(text: str) -> str:
-    """Send user message to backend — uses cached screen context from Neo4j, no fresh screenshot."""
+def handle_user_message(text: str, overlay: "Overlay" = None) -> str:
+    """Stream response from backend — words appear as they arrive."""
     try:
         resp = requests.post(
-            f"{BACKEND_URL}/query",
+            f"{BACKEND_URL}/query/stream",
             json={"message": text},
             timeout=60,
+            stream=True,
         )
-        return resp.json().get("response", "No response")
+        if overlay:
+            overlay.start_message("ScreenMind: ")
+            full = ""
+            for line in resp.iter_lines(decode_unicode=True):
+                if not line or not line.startswith("data: "):
+                    continue
+                data = line[6:]  # strip "data: "
+                if data == "[DONE]":
+                    break
+                if data.startswith("[ERROR]"):
+                    overlay.append_to_message(data)
+                    full += data
+                    break
+                overlay.append_to_message(data)
+                full += data
+            overlay.end_message()
+            return full or "No response"
+        else:
+            # Fallback non-streaming
+            resp2 = requests.post(
+                f"{BACKEND_URL}/query",
+                json={"message": text},
+                timeout=60,
+            )
+            return resp2.json().get("response", "No response")
     except Exception as e:
         return f"Backend error: {e}"
 
@@ -91,8 +116,7 @@ def main():
             if text.strip():
                 overlay.add_message(f"You (voice): {text}")
                 overlay.set_status("Thinking...")
-                response = handle_user_message(text)
-                overlay.add_message(f"ScreenMind: {response}")
+                handle_user_message(text, overlay=overlay)
         except Exception as e:
             overlay.add_message(f"Voice error: {e}")
         overlay.set_status("Watching...")
