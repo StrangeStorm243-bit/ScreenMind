@@ -40,14 +40,20 @@ def health():
 @app.post("/analyze", response_model=AgentResponse)
 async def analyze(req: AnalyzeRequest):
     """Analyze a screenshot, optionally with a user message."""
-    from backend.agent import run_agent
-
     try:
-        result = run_agent(screenshot_b64=req.screenshot_b64, user_message=req.user_message)
-        return AgentResponse(
-            response=result["response"],
-            proactive=result.get("proactive", False),
-        )
+        if req.user_message:
+            # User asked a question with screenshot — full pipeline
+            from backend.agent import run_agent
+            result = run_agent(screenshot_b64=req.screenshot_b64, user_message=req.user_message)
+            return AgentResponse(
+                response=result["response"],
+                proactive=result.get("proactive", False),
+            )
+        else:
+            # Background capture — fast path: Reka + GLiNER2 only, skip LLM
+            from backend.agent import update_screen_context
+            update_screen_context(req.screenshot_b64)
+            return AgentResponse(response="", proactive=False)
     except Exception as e:
         return AgentResponse(response=f"Error: {e}")
 

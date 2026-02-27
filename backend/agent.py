@@ -70,6 +70,15 @@ def _auto_store_entities(extracted: dict):
         pass  # Neo4j may not be configured
 
 
+def update_screen_context(screenshot_b64: str):
+    """Fast path: Reka + GLiNER2 only. Updates screen context without calling LLM."""
+    global last_screen_description
+    screen_desc = analyze_screenshot(screenshot_b64)
+    last_screen_description = screen_desc
+    extracted = extract_screen_entities(screen_desc)
+    _auto_store_entities(extracted)
+
+
 # In-memory conversation history (per session)
 conversation_history: list[dict] = []
 last_screen_description: str = ""
