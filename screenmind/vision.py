@@ -7,9 +7,12 @@ from screenmind.config import REKA_API_KEY
 _API_URL = "https://api.reka.ai/v1/chat"
 
 DEFAULT_PROMPT = (
-    "Describe this desktop screenshot. "
-    "What applications are open? What content is visible? "
-    "What is the user currently working on?"
+    "Analyze this desktop screenshot. Be precise and factual.\n"
+    "1. APPLICATION: Name the exact application or browser tab in focus (e.g. 'VS Code', 'Chrome — GitHub', 'Discord — #general').\n"
+    "2. WINDOW TITLE: Read the title bar text exactly as shown.\n"
+    "3. VISIBLE CONTENT: List specific text, filenames, URLs, channel names, or code visible on screen. Quote exact text when possible.\n"
+    "4. ACTIVITY: One sentence — what is the user doing right now?\n"
+    "Be short. Do not guess or infer anything not visible. If text is unreadable, say so."
 )
 
 
