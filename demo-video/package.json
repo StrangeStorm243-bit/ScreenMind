@@ -1,0 +1,24 @@
+{
+  "name": "demo-video",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "remotion studio src/index.ts",
+    "build": "remotion render src/index.ts ScreenMindDemo out/screenmind-demo.mp4",
+    "preview": "remotion preview src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@remotion/cli": "4.0.399",
+    "@remotion/google-fonts": "4.0.399",
+    "@remotion/transitions": "4.0.399",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.399",
+    "typescript": "5.7.3"
+  }
+}

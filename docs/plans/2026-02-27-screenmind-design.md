@@ -21,6 +21,7 @@ A personal productivity copilot that lives as a floating overlay on your desktop
 | **Neo4j** | Knowledge graph memory | Stores entities, topics, and relationships observed across screenshots. Enables temporal recall ("what was I reading earlier?") |
 | **Render** | Deployment | Backend API deployed on Render |
 | *OpenAI* | Agent brain + voice | GPT-4o for orchestration, Whisper for push-to-talk voice transcription |
+|(Fastino) as a stretch goal
 
 > Note: Modulate was evaluated but is enterprise-only (C/C++ SDKs, no public API). If API access is provided at the event, can integrate as a stretch goal.
 
