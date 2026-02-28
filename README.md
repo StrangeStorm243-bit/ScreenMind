@@ -2,6 +2,27 @@
 
 **A desktop-aware AI copilot that sees your screen and remembers your work context.**
 
+## Quick Start
+
+```bash
+# 1. Clone and install
+git clone https://github.com/StrangeStorm243-bit/ScreenMind.git
+cd ScreenMind
+pip install -r requirements.txt
+
+# 2. Set up environment variables
+cp .env.example .env
+# Edit .env with your API keys (Reka, Tavily, Neo4j, OpenAI/LLM)
+
+# 3. Start the backend
+python backend/server.py
+
+# 4. In a new terminal, start the desktop client
+python -m screenmind.main
+```
+
+**Controls:** Type in the overlay to chat | `Ctrl+Space` for voice | `Ctrl+Shift+S` to restore overlay
+
 ## What It Does
 
 - **Screenshots your desktop** on a loop, analyzes each frame with Reka Vision to understand what you're working on
