@@ -9,12 +9,13 @@ import {
 import { THEME } from "../styles/theme";
 
 const NODES = [
-  { icon: "👁️", label: "Sees your screen", sponsor: "Reka Vision", x: 70, y: 300, delay: 30, color: "#E13238" },
-  { icon: "🧠", label: "Understands context", sponsor: "GPT-4o", x: 370, y: 300, delay: 60, color: "#10A37F" },
-  { icon: "🕸️", label: "Remembers everything", sponsor: "Neo4j", x: 670, y: 300, delay: 90, color: "#018BFF" },
-  { icon: "🔍", label: "Searches the web", sponsor: "Tavily", x: 970, y: 300, delay: 120, color: "#7209B7" },
-  { icon: "☁️", label: "Runs in the cloud", sponsor: "Render", x: 1270, y: 300, delay: 150, color: "#46E3B7" },
-  { icon: "🎤", label: "Hears your voice", sponsor: "Whisper", x: 1570, y: 300, delay: 180, color: "#F59E0B" },
+  { icon: "👁️", label: "Sees your screen", sponsor: "Reka Vision", x: 30, y: 300, delay: 30, color: "#E13238" },
+  { icon: "🏷️", label: "Extracts entities", sponsor: "Fastino GLiNER2", x: 260, y: 300, delay: 60, color: "#F59E0B" },
+  { icon: "🧠", label: "Understands context", sponsor: "GPT-4o", x: 490, y: 300, delay: 90, color: "#10A37F" },
+  { icon: "🕸️", label: "Remembers everything", sponsor: "Neo4j", x: 720, y: 300, delay: 120, color: "#018BFF" },
+  { icon: "🔍", label: "Searches the web", sponsor: "Tavily", x: 950, y: 300, delay: 150, color: "#7209B7" },
+  { icon: "☁️", label: "Runs in the cloud", sponsor: "Render", x: 1180, y: 300, delay: 180, color: "#46E3B7" },
+  { icon: "🎤", label: "Hears your voice", sponsor: "Whisper", x: 1410, y: 300, delay: 210, color: "#FF6B6B" },
 ];
 
 const ARROWS = [
@@ -23,6 +24,7 @@ const ARROWS = [
   { from: 2, to: 3, delay: 130 },
   { from: 3, to: 4, delay: 160 },
   { from: 4, to: 5, delay: 190 },
+  { from: 5, to: 6, delay: 220 },
 ];
 
 const ArchNode: React.FC<{
@@ -152,7 +154,7 @@ export const ArchScene: React.FC = () => {
             opacity: subtitleOpacity,
           }}
         >
-          6 tools working together, seamlessly
+          7 tools working together, seamlessly
         </div>
       </div>
 
@@ -235,7 +237,7 @@ export const ArchScene: React.FC = () => {
               border: "1px solid #E2E8F0",
             }}
           >
-            Screenshot → Vision → Graph → Agent → Response
+            Screenshot → Reka Vision → Fastino GLiNER2 → Neo4j → Agent → Response
           </div>
         </div>
       )}

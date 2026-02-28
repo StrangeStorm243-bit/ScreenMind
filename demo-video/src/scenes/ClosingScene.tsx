@@ -8,7 +8,7 @@ import {
 } from "remotion";
 import { THEME } from "../styles/theme";
 
-const SPONSORS = ["Reka", "Tavily", "Neo4j", "Render", "OpenAI"];
+const SPONSORS = ["Reka", "Fastino", "Tavily", "Neo4j", "Render", "OpenAI"];
 
 export const ClosingScene: React.FC = () => {
   const frame = useCurrentFrame();
