@@ -1,42 +1,49 @@
 export const THEME = {
-  bg: "#FFFFFF",
-  bgAlt: "#F8F9FA",
-  text: "#1A1A2E",
+  // Dark tech aesthetic
+  bg: "#0D1117",
+  bgCard: "#161B22",
+  bgCardAlt: "#1C2333",
+  text: "#E6EDF3",
+  textMuted: "#7D8590",
+  // Neon accents
+  cyan: "#00D4FF",
+  magenta: "#FF006E",
+  // Brand colors
+  reka: "#E13238",
+  fastino: "#F59E0B",
+  neo4j: "#018BFF",
+  llm: "#06D6A0",
+  tavily: "#7209B7",
+  // Semantic
   accent: "#4361EE",
   secondary: "#7209B7",
   success: "#06D6A0",
-  overlayDark: "#1E1E2E",
-  overlayText: "#E0E0E0",
   danger: "#E13238",
-  muted: "#94A3B8",
-  neo4j: "#018BFF",
-  reka: "#E13238",
-  fastino: "#F59E0B",
+  // Grid
+  gridLine: "rgba(255,255,255,0.03)",
 } as const;
 
 export const FPS = 30;
 export const WIDTH = 1920;
 export const HEIGHT = 1080;
 
-// Scene durations in frames (at 30fps) — 2 minute video
+// 6 scenes: 90s animated + ~89s real demo = ~3 minutes
 export const SCENES = {
-  problem: 15 * FPS,       // 0:00–0:15 (450 frames)
-  intro: 10 * FPS,         // 0:15–0:25 (300 frames)
-  rekaCapture: 20 * FPS,   // 0:25–0:45 (600 frames) — NEW: Reka background capture loop
-  ragFastino: 20 * FPS,    // 0:45–1:05 (600 frames) — NEW: Fastino GLiNER2 + Neo4j RAG
-  demo: 25 * FPS,          // 1:05–1:30 (750 frames)
-  arch: 20 * FPS,          // 1:30–1:50 (600 frames)
-  closing: 10 * FPS,       // 1:50–2:00 (300 frames)
+  problem: 600,       // 0:00–0:20 (20s)
+  reka: 600,          // 0:20–0:40 (20s)
+  fastino: 450,       // 0:40–0:55 (15s)
+  neo4jRag: 600,      // 0:55–1:15 (20s)
+  closing: 450,       // 1:15–1:30 (15s)
+  realDemo: 2681,     // 1:30–3:00 (~89.4s at 30fps)
 } as const;
 
-export const TRANSITION_FRAMES = 15; // 0.5s fade between scenes
+export const TRANSITION_FRAMES = 15;
 
 export const TOTAL_DURATION =
   SCENES.problem +
-  SCENES.intro +
-  SCENES.rekaCapture +
-  SCENES.ragFastino +
-  SCENES.demo +
-  SCENES.arch +
-  SCENES.closing -
-  6 * TRANSITION_FRAMES; // 6 transitions between 7 scenes
+  SCENES.reka +
+  SCENES.fastino +
+  SCENES.neo4jRag +
+  SCENES.closing +
+  SCENES.realDemo -
+  5 * TRANSITION_FRAMES; // 5 transitions between 6 scenes

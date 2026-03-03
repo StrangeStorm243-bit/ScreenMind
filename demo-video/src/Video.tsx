@@ -4,12 +4,11 @@ import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
 import { SCENES, TRANSITION_FRAMES, THEME } from "./styles/theme";
 import { ProblemScene } from "./scenes/ProblemScene";
-import { IntroScene } from "./scenes/IntroScene";
-import { RekaCaptureScene } from "./scenes/RekaCaptureScene";
-import { RagFastinoScene } from "./scenes/RagFastinoScene";
-import { DemoScene } from "./scenes/DemoScene";
-import { ArchScene } from "./scenes/ArchScene";
+import { RekaScene } from "./scenes/RekaScene";
+import { FastinoScene } from "./scenes/FastinoScene";
+import { Neo4jRagScene } from "./scenes/Neo4jRagScene";
 import { ClosingScene } from "./scenes/ClosingScene";
+import { RealDemoScene } from "./scenes/RealDemoScene";
 
 const T = linearTiming({ durationInFrames: TRANSITION_FRAMES });
 
@@ -22,33 +21,28 @@ export const Video: React.FC = () => {
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition presentation={fade()} timing={T} />
 
-        <TransitionSeries.Sequence durationInFrames={SCENES.intro}>
-          <IntroScene />
+        <TransitionSeries.Sequence durationInFrames={SCENES.reka}>
+          <RekaScene />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition presentation={fade()} timing={T} />
 
-        <TransitionSeries.Sequence durationInFrames={SCENES.rekaCapture}>
-          <RekaCaptureScene />
+        <TransitionSeries.Sequence durationInFrames={SCENES.fastino}>
+          <FastinoScene />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition presentation={fade()} timing={T} />
 
-        <TransitionSeries.Sequence durationInFrames={SCENES.ragFastino}>
-          <RagFastinoScene />
-        </TransitionSeries.Sequence>
-        <TransitionSeries.Transition presentation={fade()} timing={T} />
-
-        <TransitionSeries.Sequence durationInFrames={SCENES.demo}>
-          <DemoScene />
-        </TransitionSeries.Sequence>
-        <TransitionSeries.Transition presentation={fade()} timing={T} />
-
-        <TransitionSeries.Sequence durationInFrames={SCENES.arch}>
-          <ArchScene />
+        <TransitionSeries.Sequence durationInFrames={SCENES.neo4jRag}>
+          <Neo4jRagScene />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition presentation={fade()} timing={T} />
 
         <TransitionSeries.Sequence durationInFrames={SCENES.closing}>
           <ClosingScene />
+        </TransitionSeries.Sequence>
+        <TransitionSeries.Transition presentation={fade()} timing={T} />
+
+        <TransitionSeries.Sequence durationInFrames={SCENES.realDemo}>
+          <RealDemoScene />
         </TransitionSeries.Sequence>
       </TransitionSeries>
     </AbsoluteFill>
