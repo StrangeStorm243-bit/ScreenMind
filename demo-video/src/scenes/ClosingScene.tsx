@@ -105,7 +105,7 @@ export const ClosingScene: React.FC = () => {
   const { fps } = useVideoConfig();
 
   /* --- Beat 2: pipeline compresses upward --- */
-  const pipelineY = interpolate(frame, [200, 240], [350, 150], {
+  const pipelineY = interpolate(frame, [133, 160], [350, 150], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -113,18 +113,18 @@ export const ClosingScene: React.FC = () => {
   /* --- Beat 2: logo entrance --- */
   const logoScale = spring({
     fps,
-    frame: frame - 210,
+    frame: frame - 140,
     config: { damping: 15, stiffness: 120 },
   });
 
   /* --- Beat 2: tagline fade --- */
-  const taglineOpacity = interpolate(frame, [240, 260], [0, 1], {
+  const taglineOpacity = interpolate(frame, [160, 173], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   /* --- Beat 3: fade to black --- */
-  const fadeToBlack = interpolate(frame, [350, 450], [0, 1], {
+  const fadeToBlack = interpolate(frame, [233, 300], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -237,7 +237,7 @@ export const ClosingScene: React.FC = () => {
       {/* ============================================================ */}
       {/* BEAT 2: Credits                                               */}
       {/* ============================================================ */}
-      {frame >= 200 && (
+      {frame >= 133 && (
         <>
           {/* ScreenMind logo */}
           <div
@@ -315,7 +315,7 @@ export const ClosingScene: React.FC = () => {
             {SPONSORS.map((sponsor, i) => {
               const badgeScale = spring({
                 fps,
-                frame: frame - (270 + i * 12),
+                frame: frame - (180 + i * 8),
                 config: { damping: 12, stiffness: 180 },
               });
 

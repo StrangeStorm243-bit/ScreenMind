@@ -37,23 +37,23 @@ const TypeWriter: React.FC<{
 /* ── graph data ──────────────────────────────────────────────────────── */
 
 const NODES = [
-  { id: "sc1", label: "ScreenCapture", x: 400, y: 200, r: 40, color: THEME.neo4j, delay: 110 },
-  { id: "vscode", label: "VS Code", x: 200, y: 100, r: 26, color: THEME.neo4j, delay: 140 },
-  { id: "python", label: "Python", x: 200, y: 300, r: 26, color: THEME.secondary, delay: 155 },
-  { id: "runagent", label: "run_agent", x: 600, y: 100, r: 26, color: THEME.secondary, delay: 170 },
-  { id: "coding", label: "coding", x: 600, y: 300, r: 26, color: THEME.fastino, delay: 185 },
-  { id: "react", label: "React", x: 100, y: 200, r: 22, color: THEME.secondary, delay: 220 },
-  { id: "chrome", label: "Chrome", x: 700, y: 200, r: 22, color: THEME.accent, delay: 235 },
-  { id: "api", label: "API Design", x: 400, y: 380, r: 22, color: THEME.success, delay: 250 },
+  { id: "sc1", label: "ScreenCapture", x: 400, y: 200, r: 40, color: THEME.neo4j, delay: 73 },
+  { id: "vscode", label: "VS Code", x: 200, y: 100, r: 26, color: THEME.neo4j, delay: 93 },
+  { id: "python", label: "Python", x: 200, y: 300, r: 26, color: THEME.secondary, delay: 103 },
+  { id: "runagent", label: "run_agent", x: 600, y: 100, r: 26, color: THEME.secondary, delay: 113 },
+  { id: "coding", label: "coding", x: 600, y: 300, r: 26, color: THEME.fastino, delay: 123 },
+  { id: "react", label: "React", x: 100, y: 200, r: 22, color: THEME.secondary, delay: 147 },
+  { id: "chrome", label: "Chrome", x: 700, y: 200, r: 22, color: THEME.accent, delay: 157 },
+  { id: "api", label: "API Design", x: 400, y: 380, r: 22, color: THEME.success, delay: 167 },
 ];
 
 const EDGES = [
-  { from: "sc1", to: "vscode", label: "MENTIONS", delay: 145 },
-  { from: "sc1", to: "python", label: "MENTIONS", delay: 160 },
-  { from: "sc1", to: "runagent", label: "MENTIONS", delay: 175 },
-  { from: "sc1", to: "coding", label: "MENTIONS", delay: 190 },
-  { from: "python", to: "react", label: "RELATED_TO", delay: 240 },
-  { from: "vscode", to: "chrome", label: "RELATED_TO", delay: 255 },
+  { from: "sc1", to: "vscode", label: "MENTIONS", delay: 97 },
+  { from: "sc1", to: "python", label: "MENTIONS", delay: 107 },
+  { from: "sc1", to: "runagent", label: "MENTIONS", delay: 117 },
+  { from: "sc1", to: "coding", label: "MENTIONS", delay: 127 },
+  { from: "python", to: "react", label: "RELATED_TO", delay: 160 },
+  { from: "vscode", to: "chrome", label: "RELATED_TO", delay: 170 },
 ];
 
 const RELEVANT_IDS = new Set(["vscode", "python", "coding", "runagent"]);
@@ -68,53 +68,53 @@ export const Neo4jRagScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  /* ── Phase A: Storage (0–300) ──────────────────────────────────────── */
+  /* ── Phase A: Storage (0–200) ──────────────────────────────────────── */
 
   // Beat 1: Title fade in
   const titleOpacity = interpolate(frame, [0, 20], [0, 1], clamp);
 
   // Beat 1: Entity badges
   const BADGES = [
-    { label: "VS Code", color: THEME.neo4j, delay: 30 },
-    { label: "Python", color: THEME.secondary, delay: 45 },
-    { label: "run_agent", color: THEME.secondary, delay: 60 },
-    { label: "coding", color: THEME.fastino, delay: 75 },
+    { label: "VS Code", color: THEME.neo4j, delay: 20 },
+    { label: "Python", color: THEME.secondary, delay: 30 },
+    { label: "run_agent", color: THEME.secondary, delay: 40 },
+    { label: "coding", color: THEME.fastino, delay: 50 },
   ];
 
-  /* ── Phase B: RAG Retrieval (300–600) ──────────────────────────────── */
+  /* ── Phase B: RAG Retrieval (200–400) ──────────────────────────────── */
 
   // Beat 3: Chat input bar
   const chatBarScale = spring({
     fps,
-    frame: frame - 300,
+    frame: frame - 200,
     config: { damping: 12, stiffness: 200 },
   });
-  const chatBarOpacity = interpolate(frame - 300, [0, 8], [0, 1], clamp);
+  const chatBarOpacity = interpolate(frame - 200, [0, 8], [0, 1], clamp);
 
   // Beat 4: Retrieval label
-  const retrievalLabelOpacity = interpolate(frame, [430, 445], [0, 1], clamp);
+  const retrievalLabelOpacity = interpolate(frame, [287, 297], [0, 1], clamp);
 
   // Beat 5: Comparison boxes
   const leftBoxScale = spring({
     fps,
-    frame: frame - 500,
+    frame: frame - 333,
     config: { damping: 12, stiffness: 200 },
   });
-  const leftBoxOpacity = interpolate(frame - 500, [0, 8], [0, 1], clamp);
+  const leftBoxOpacity = interpolate(frame - 333, [0, 8], [0, 1], clamp);
 
   const rightBoxScale = spring({
     fps,
-    frame: frame - 515,
+    frame: frame - 343,
     config: { damping: 12, stiffness: 200 },
   });
-  const rightBoxOpacity = interpolate(frame - 515, [0, 8], [0, 1], clamp);
+  const rightBoxOpacity = interpolate(frame - 343, [0, 8], [0, 1], clamp);
 
   const fasterBadgeScale = spring({
     fps,
-    frame: frame - 530,
+    frame: frame - 353,
     config: { damping: 12, stiffness: 200 },
   });
-  const fasterBadgeOpacity = interpolate(frame - 530, [0, 8], [0, 1], clamp);
+  const fasterBadgeOpacity = interpolate(frame - 353, [0, 8], [0, 1], clamp);
   const fasterPulse = 1 + Math.sin(frame * 0.08) * 0.05;
 
   return (
@@ -224,8 +224,8 @@ export const Neo4jRagScene: React.FC = () => {
 
       {/* ═══ Beat 2: Graph Construction — Neo4j AuraDB container ═══ */}
 
-      {frame >= 100 && (() => {
-        const containerOpacity = interpolate(frame, [100, 115], [0, 1], clamp);
+      {frame >= 67 && (() => {
+        const containerOpacity = interpolate(frame, [67, 77], [0, 1], clamp);
         return (
           <div
             style={{
@@ -317,10 +317,10 @@ export const Neo4jRagScene: React.FC = () => {
                   clamp,
                 );
                 const edgeOpacity =
-                  frame >= 400 && isRelevantEdge
+                  frame >= 267 && isRelevantEdge
                     ? interpolate(
                         frame,
-                        [400, 420],
+                        [267, 280],
                         [baseOpacity, 1.0],
                         clamp,
                       )
@@ -383,7 +383,7 @@ export const Neo4jRagScene: React.FC = () => {
                 if (nodeOpacity <= 0) return null;
 
                 const isRelevant = RELEVANT_IDS.has(node.id);
-                const showGlow = frame >= 400 && isRelevant;
+                const showGlow = frame >= 267 && isRelevant;
                 const glowOpacity = showGlow
                   ? 0.3 + Math.sin(frame * 0.1) * 0.2
                   : 0;
@@ -444,7 +444,7 @@ export const Neo4jRagScene: React.FC = () => {
             </svg>
 
             {/* Beat 4: Retrieval label */}
-            {frame >= 430 && (
+            {frame >= 287 && (
               <div
                 style={{
                   position: "absolute",
@@ -466,7 +466,7 @@ export const Neo4jRagScene: React.FC = () => {
 
       {/* ═══ Beat 3: User Query — chat input bar ═══ */}
 
-      {frame >= 300 && (
+      {frame >= 200 && (
         <div
           style={{
             position: "absolute",
@@ -489,15 +489,15 @@ export const Neo4jRagScene: React.FC = () => {
         >
           <TypeWriter
             text="What was I coding earlier?"
-            startFrame={320}
-            speed={1.5}
+            startFrame={213}
+            speed={2.0}
           />
         </div>
       )}
 
       {/* ═══ Beat 5: Speed Comparison ═══ */}
 
-      {frame >= 500 && (
+      {frame >= 333 && (
         <div
           style={{
             position: "absolute",

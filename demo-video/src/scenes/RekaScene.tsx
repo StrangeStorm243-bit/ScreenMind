@@ -102,17 +102,17 @@ export const RekaScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  /* ── Beat 1  (0-120): Title + Screen Capture ──────────────────────── */
+  /* ── Beat 1  (0-80): Title + Screen Capture ───────────────────────── */
 
   const titleOpacity = interpolate(frame, [0, 20], [0, 1], clamp);
 
   const captureScale = spring({
     fps,
-    frame: frame - 30,
+    frame: frame - 20,
     config: { damping: 12, stiffness: 200 },
   });
 
-  const captureOpacity = interpolate(frame - 30, [0, 8], [0, 1], clamp);
+  const captureOpacity = interpolate(frame - 20, [0, 8], [0, 1], clamp);
 
   // Pulsing for capture label
   const pulse = interpolate(
@@ -133,7 +133,7 @@ export const RekaScene: React.FC = () => {
           ? "15s..."
           : "20s...";
 
-  /* ── Beat 2  (120-280): Perceptual Hash Change Detection ──────────── */
+  /* ── Beat 2  (80-187): Perceptual Hash Change Detection ──────────── */
 
   const leftHashColors = Array(8).fill(THEME.success);
   const rightHashColors = [
@@ -147,21 +147,21 @@ export const RekaScene: React.FC = () => {
     THEME.danger,
   ];
 
-  const neqOpacity = interpolate(frame, [200, 215], [0, 1], clamp);
+  const neqOpacity = interpolate(frame, [133, 143], [0, 1], clamp);
 
-  const hashResultOpacity = interpolate(frame, [210, 225], [0, 1], clamp);
+  const hashResultOpacity = interpolate(frame, [140, 150], [0, 1], clamp);
 
-  const changeDetectedOpacity = interpolate(frame, [240, 255], [0, 1], clamp);
+  const changeDetectedOpacity = interpolate(frame, [160, 170], [0, 1], clamp);
 
-  /* ── Beat 3  (280-450): Reka Vision API Processing ────────────────── */
+  /* ── Beat 3  (187-300): Reka Vision API Processing ────────────────── */
 
   const rekaNodeScale = spring({
     fps,
-    frame: frame - 280,
+    frame: frame - 187,
     config: { damping: 12, stiffness: 180 },
   });
 
-  const rekaNodeOpacity = interpolate(frame - 280, [0, 8], [0, 1], clamp);
+  const rekaNodeOpacity = interpolate(frame - 187, [0, 8], [0, 1], clamp);
 
   const terminalLines = [
     { label: "APPLICATION:", value: "VS Code" },
@@ -170,11 +170,11 @@ export const RekaScene: React.FC = () => {
     { label: "ACTIVITY:", value: "coding" },
   ];
 
-  const terminalCardOpacity = interpolate(frame, [290, 305], [0, 1], clamp);
+  const terminalCardOpacity = interpolate(frame, [193, 203], [0, 1], clamp);
 
-  /* ── Beat 4  (450-600): Pipeline Summary ──────────────────────────── */
+  /* ── Beat 4  (300-400): Pipeline Summary ──────────────────────────── */
 
-  const pipelineOpacity = interpolate(frame, [450, 480], [0, 1], clamp);
+  const pipelineOpacity = interpolate(frame, [300, 320], [0, 1], clamp);
 
   // 6 data particles
   const PARTICLE_COUNT = 6;
@@ -275,7 +275,7 @@ export const RekaScene: React.FC = () => {
       </div>
 
       {/* Pulsing capture label */}
-      {frame >= 30 && (
+      {frame >= 20 && (
         <div
           style={{
             position: "absolute",
@@ -292,7 +292,7 @@ export const RekaScene: React.FC = () => {
       )}
 
       {/* Pulsing timer */}
-      {frame >= 30 && (
+      {frame >= 20 && (
         <div
           style={{
             position: "absolute",
@@ -311,7 +311,7 @@ export const RekaScene: React.FC = () => {
 
       {/* ═══ Beat 2: Perceptual Hash Change Detection ═══ */}
 
-      {frame >= 120 && (
+      {frame >= 80 && (
         <>
           {/* Left thumbnail — same content */}
           <ScreenshotThumbnail
@@ -319,7 +319,7 @@ export const RekaScene: React.FC = () => {
             x={200}
             y={340}
             barWidths={[80, 55, 70, 40, 65]}
-            delay={130}
+            delay={87}
           />
 
           {/* Right thumbnail — different content */}
@@ -329,7 +329,7 @@ export const RekaScene: React.FC = () => {
             y={340}
             barWidths={[60, 90, 45, 75, 50]}
             borderColor={THEME.reka}
-            delay={150}
+            delay={100}
           />
 
           {/* Left hash squares */}
@@ -345,7 +345,7 @@ export const RekaScene: React.FC = () => {
             {leftHashColors.map((color, i) => {
               const squareOpacity = interpolate(
                 frame,
-                [170 + i * 2, 172 + i * 2],
+                [113 + i * 2, 115 + i * 2],
                 [0, 1],
                 clamp,
               );
@@ -377,7 +377,7 @@ export const RekaScene: React.FC = () => {
             {rightHashColors.map((color, i) => {
               const squareOpacity = interpolate(
                 frame,
-                [170 + i * 2, 172 + i * 2],
+                [113 + i * 2, 115 + i * 2],
                 [0, 1],
                 clamp,
               );
@@ -447,7 +447,7 @@ export const RekaScene: React.FC = () => {
 
       {/* ═══ Beat 3: Reka Vision API Processing ═══ */}
 
-      {frame >= 280 && (
+      {frame >= 187 && (
         <>
           {/* Reka node — glowing circle */}
           <div
@@ -541,12 +541,12 @@ export const RekaScene: React.FC = () => {
             {/* Terminal lines — typewriter */}
             <div style={{ padding: 16 }}>
               {terminalLines.map((line, i) => {
-                const lineStart = 300 + i * 20;
+                const lineStart = 200 + i * 13;
                 // Characters revealed over time
                 const fullText = `> ${line.label} ${line.value}`;
                 const charsRevealed = interpolate(
                   frame,
-                  [lineStart, lineStart + 18],
+                  [lineStart, lineStart + 12],
                   [0, fullText.length],
                   clamp,
                 );
@@ -599,7 +599,7 @@ export const RekaScene: React.FC = () => {
 
       {/* ═══ Beat 4: Pipeline Summary ═══ */}
 
-      {frame >= 450 && (
+      {frame >= 300 && (
         <>
           {/* Pipeline label card */}
           <div
@@ -636,7 +636,7 @@ export const RekaScene: React.FC = () => {
 
           {/* Data particles flowing across pipeline */}
           {Array.from({ length: PARTICLE_COUNT }, (_, i) => {
-            const particleStart = 460 + i * PARTICLE_STAGGER;
+            const particleStart = 307 + i * PARTICLE_STAGGER;
             const loopLength = PARTICLE_TRAVEL + 20;
             const elapsed = (frame - particleStart) % loopLength;
             const progress = elapsed / PARTICLE_TRAVEL;

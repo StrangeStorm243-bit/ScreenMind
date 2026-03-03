@@ -27,14 +27,14 @@ export const FPS = 30;
 export const WIDTH = 1920;
 export const HEIGHT = 1080;
 
-// 6 scenes: 90s animated + ~89s real demo = ~3 minutes
+// 6 scenes: 60s animated (1.5x speed) + ~89s real demo = ~2.5 minutes
 export const SCENES = {
-  problem: 600,       // 0:00–0:20 (20s)
-  reka: 600,          // 0:20–0:40 (20s)
-  fastino: 450,       // 0:40–0:55 (15s)
-  neo4jRag: 600,      // 0:55–1:15 (20s)
-  closing: 450,       // 1:15–1:30 (15s)
-  realDemo: 2681,     // 1:30–3:00 (~89.4s at 30fps)
+  problem: 400,       // 0:00–0:13 (13.3s)
+  reka: 400,          // 0:13–0:27 (13.3s)
+  fastino: 300,       // 0:27–0:37 (10s)
+  neo4jRag: 400,      // 0:37–0:50 (13.3s)
+  closing: 300,       // 0:50–1:00 (10s)
+  realDemo: 2681,     // 1:00–2:29 (~89.4s at 30fps)
 } as const;
 
 export const TRANSITION_FRAMES = 15;

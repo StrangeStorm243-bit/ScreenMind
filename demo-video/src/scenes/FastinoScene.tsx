@@ -13,10 +13,10 @@ import { THEME } from "../styles/theme";
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
 const ENTITIES = [
-  { delay: 100, dot: THEME.neo4j, label: "VS Code", category: "application", score: "0.94" },
-  { delay: 120, dot: THEME.secondary, label: "Python", category: "technology", score: "0.91" },
-  { delay: 140, dot: THEME.secondary, label: "run_agent", category: "technology", score: "0.87" },
-  { delay: 160, dot: THEME.fastino, label: "coding", category: "activity", score: "0.93" },
+  { delay: 67, dot: THEME.neo4j, label: "VS Code", category: "application", score: "0.94" },
+  { delay: 80, dot: THEME.secondary, label: "Python", category: "technology", score: "0.91" },
+  { delay: 93, dot: THEME.secondary, label: "run_agent", category: "technology", score: "0.87" },
+  { delay: 107, dot: THEME.fastino, label: "coding", category: "activity", score: "0.93" },
 ] as const;
 
 const REKA_LINES = [
@@ -32,56 +32,56 @@ export const FastinoScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  /* ── Beat 1 (0–80): Title + Reka Input ─────────────────────────────── */
+  /* ── Beat 1 (0–53): Title + Reka Input ─────────────────────────────── */
 
   const titleOpacity = interpolate(frame, [0, 20], [0, 1], clamp);
 
   const rekaCardScale = spring({
     fps,
-    frame: frame - 20,
+    frame: frame - 13,
     config: { damping: 12, stiffness: 200 },
   });
 
-  const rekaCardOpacity = interpolate(frame - 20, [0, 8], [0, 1], clamp);
+  const rekaCardOpacity = interpolate(frame - 13, [0, 8], [0, 1], clamp);
 
-  /* ── Beat 2 (80–220): GLiNER2 Processing + Entity Extraction ───────── */
+  /* ── Beat 2 (53–147): GLiNER2 Processing + Entity Extraction ───────── */
 
-  const arrowOpacity = interpolate(frame, [80, 95], [0, 1], clamp);
+  const arrowOpacity = interpolate(frame, [53, 63], [0, 1], clamp);
 
   const fastinoNodeScale = spring({
     fps,
-    frame: frame - 85,
+    frame: frame - 57,
     config: { damping: 12, stiffness: 180 },
   });
 
-  const fastinoNodeOpacity = interpolate(frame - 85, [0, 8], [0, 1], clamp);
+  const fastinoNodeOpacity = interpolate(frame - 57, [0, 8], [0, 1], clamp);
 
   // Pulsing glow for the Fastino node
   const glowIntensity = Math.sin(frame * 0.15) * 0.3 + 0.5;
 
-  /* ── Beat 3 (220–340): Three Operation Cards ───────────────────────── */
+  /* ── Beat 3 (147–227): Three Operation Cards ───────────────────────── */
 
   const card1Scale = spring({
     fps,
-    frame: frame - 225,
+    frame: frame - 150,
     config: { damping: 12, stiffness: 200 },
   });
 
   const card2Scale = spring({
     fps,
-    frame: frame - 250,
+    frame: frame - 167,
     config: { damping: 12, stiffness: 200 },
   });
 
   const card3Scale = spring({
     fps,
-    frame: frame - 275,
+    frame: frame - 183,
     config: { damping: 12, stiffness: 200 },
   });
 
-  /* ── Beat 4 (340–450): Pipeline label + particles ──────────────────── */
+  /* ── Beat 4 (227–300): Pipeline label + particles ──────────────────── */
 
-  const pipelineOpacity = interpolate(frame, [340, 370], [0, 1], clamp);
+  const pipelineOpacity = interpolate(frame, [227, 247], [0, 1], clamp);
 
   const PARTICLE_COUNT = 5;
   const PARTICLE_STAGGER = 10;
@@ -194,7 +194,7 @@ export const FastinoScene: React.FC = () => {
       {/* ═══ Beat 2: GLiNER2 Processing + Entity Extraction ═══ */}
 
       {/* Arrow from Reka card to Fastino node */}
-      {frame >= 80 && (
+      {frame >= 53 && (
         <div
           style={{
             position: "absolute",
@@ -212,7 +212,7 @@ export const FastinoScene: React.FC = () => {
       )}
 
       {/* Fastino GLiNER2 processing node */}
-      {frame >= 85 && (
+      {frame >= 57 && (
         <div
           style={{
             position: "absolute",
@@ -255,7 +255,7 @@ export const FastinoScene: React.FC = () => {
       )}
 
       {/* Extracted entity badges */}
-      {frame >= 100 && (
+      {frame >= 67 && (
         <div
           style={{
             position: "absolute",
@@ -351,7 +351,7 @@ export const FastinoScene: React.FC = () => {
 
       {/* ═══ Beat 3: Three Operation Cards ═══ */}
 
-      {frame >= 220 && (
+      {frame >= 147 && (
         <div
           style={{
             position: "absolute",
@@ -605,7 +605,7 @@ export const FastinoScene: React.FC = () => {
 
       {/* ═══ Beat 4: Pipeline label + particles ═══ */}
 
-      {frame >= 340 && (
+      {frame >= 227 && (
         <>
           {/* Pipeline label card */}
           <div
@@ -645,7 +645,7 @@ export const FastinoScene: React.FC = () => {
 
           {/* Data particles flowing left to right */}
           {Array.from({ length: PARTICLE_COUNT }, (_, i) => {
-            const particleStart = 345 + i * PARTICLE_STAGGER;
+            const particleStart = 230 + i * PARTICLE_STAGGER;
             const loopLength = PARTICLE_TRAVEL + 20;
             const elapsed = (frame - particleStart) % loopLength;
             const progress = elapsed / PARTICLE_TRAVEL;

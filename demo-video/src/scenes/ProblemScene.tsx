@@ -15,7 +15,7 @@ const TypeWriter: React.FC<{
   text: string;
   startFrame: number;
   speed?: number;
-}> = ({ text, startFrame, speed = 1.5 }) => {
+}> = ({ text, startFrame, speed = 2.0 }) => {
   const frame = useCurrentFrame();
   const elapsed = frame - startFrame;
   if (elapsed < 0) return null;
@@ -164,7 +164,7 @@ export const ProblemScene: React.FC = () => {
   const { fps } = useVideoConfig();
 
   /* --- dissolve for beat 1 + beat 2 elements --- */
-  const previousElementsOpacity = interpolate(frame, [340, 380], [1, 0], {
+  const previousElementsOpacity = interpolate(frame, [227, 253], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -172,28 +172,28 @@ export const ProblemScene: React.FC = () => {
   /* --- Beat 3: ScreenMind entrance --- */
   const logoScale = spring({
     fps,
-    frame: frame - 380,
+    frame: frame - 253,
     config: { damping: 10, stiffness: 150 },
   });
 
-  const logoOpacity = interpolate(frame, [380, 395], [0, 1], {
+  const logoOpacity = interpolate(frame, [253, 263], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   const titleScale = spring({
     fps,
-    frame: frame - 400,
+    frame: frame - 267,
     config: { damping: 12, stiffness: 180 },
   });
 
-  const titleOpacity = interpolate(frame, [400, 415], [0, 1], {
+  const titleOpacity = interpolate(frame, [267, 277], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   /* --- Beat 4: final fade out --- */
-  const finalFade = interpolate(frame, [550, 600], [1, 0], {
+  const finalFade = interpolate(frame, [367, 400], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -201,23 +201,23 @@ export const ProblemScene: React.FC = () => {
   /* --- Beat 2: chat card spring --- */
   const chatScale = spring({
     fps,
-    frame: frame - 150,
+    frame: frame - 100,
     config: { damping: 12, stiffness: 180 },
   });
 
-  const chatOpacity = interpolate(frame, [150, 160], [0, 1], {
+  const chatOpacity = interpolate(frame, [100, 107], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   /* --- Beat 2: red glow on AI response --- */
-  const redGlow = interpolate(frame, [290, 300], [0, 1], {
+  const redGlow = interpolate(frame, [193, 200], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   /* --- Beat 2: side text fade --- */
-  const sideTextOpacity = interpolate(frame, [300, 315], [0, 1], {
+  const sideTextOpacity = interpolate(frame, [200, 210], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -255,7 +255,7 @@ export const ProblemScene: React.FC = () => {
         ))}
 
         {/* Beat 2: ChatGPT mock interface */}
-        {frame >= 150 && (
+        {frame >= 100 && (
           <AbsoluteFill
             style={{
               justifyContent: "center",
@@ -315,7 +315,7 @@ export const ProblemScene: React.FC = () => {
                 }}
               >
                 {/* User message */}
-                {frame >= 170 && (
+                {frame >= 113 && (
                   <div
                     style={{
                       alignSelf: "flex-end",
@@ -334,15 +334,15 @@ export const ProblemScene: React.FC = () => {
                     >
                       <TypeWriter
                         text="What was I researching earlier?"
-                        startFrame={170}
-                        speed={1.5}
+                        startFrame={113}
+                        speed={2.0}
                       />
                     </div>
                   </div>
                 )}
 
                 {/* AI response */}
-                {frame >= 230 && (
+                {frame >= 153 && (
                   <div
                     style={{
                       alignSelf: "flex-start",
@@ -367,8 +367,8 @@ export const ProblemScene: React.FC = () => {
                     >
                       <TypeWriter
                         text="I don't have access to your screen or browsing history."
-                        startFrame={230}
-                        speed={1.5}
+                        startFrame={153}
+                        speed={2.0}
                       />
                     </div>
                   </div>
@@ -377,7 +377,7 @@ export const ProblemScene: React.FC = () => {
             </div>
 
             {/* "Your AI is blind" text below chat card */}
-            {frame >= 300 && (
+            {frame >= 200 && (
               <div
                 style={{
                   marginTop: 32,
@@ -398,7 +398,7 @@ export const ProblemScene: React.FC = () => {
       {/* ============================================================ */}
       {/* BEAT 3: ScreenMind Enters                                     */}
       {/* ============================================================ */}
-      {frame >= 380 && (
+      {frame >= 253 && (
         <AbsoluteFill
           style={{
             justifyContent: "center",
@@ -441,7 +441,7 @@ export const ProblemScene: React.FC = () => {
           </div>
 
           {/* Tagline */}
-          {frame >= 430 && (
+          {frame >= 287 && (
             <div
               style={{
                 marginTop: 16,
@@ -452,8 +452,8 @@ export const ProblemScene: React.FC = () => {
             >
               <TypeWriter
                 text="An AI that sees your screen and remembers everything"
-                startFrame={430}
-                speed={1.5}
+                startFrame={287}
+                speed={2.0}
               />
             </div>
           )}
